@@ -25,13 +25,9 @@ class BillCard extends StatelessWidget {
   }
 
   Color _footerColor(String text) {
-    final upperText = text.toUpperCase();
-    if (upperText.contains('OVERDUE')) {
-      return const Color(0xFFE05959);
-    }
-    if (upperText.contains('DUE')) {
-      return const Color(0xFFD58D3D);
-    }
+    final upper = text.toUpperCase();
+    if (upper.contains('OVERDUE')) return const Color(0xFFE05959);
+    if (upper.contains('DUE')) return const Color(0xFFD58D3D);
     return const Color(0xFF8A857D);
   }
 
@@ -40,38 +36,36 @@ class BillCard extends StatelessWidget {
     final accent = _accentForTitle();
     final footerText = bill.footerText ?? '';
     final flipperConfig = bill.flipperConfig;
+    final hasBottom = (flipperConfig != null && flipperConfig.hasContent) ||
+        footerText.isNotEmpty;
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final compact =
-            constraints.maxHeight.isFinite && constraints.maxHeight < 220;
-        final padding = compact ? 14.0 : 16.0;
-        final logoSize = compact ? 42.0 : 48.0;
-        final ctaWidth = compact ? 168.0 : 196.0;
-
-        return Container(
-          key: Key('bill-card-${bill.title}-${bill.subTitle}'),
-          constraints: BoxConstraints(minHeight: compact ? 124 : 136),
-          padding: EdgeInsets.all(padding),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(compact ? 16 : 18),
-            border: Border.all(color: const Color(0xFFE7E1D9)),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0x14000000),
-                blurRadius: compact ? 16 : 22,
-                offset: Offset(0, compact ? 8 : 10),
-                spreadRadius: elevation == 0 ? 0 : 0.2,
-              ),
-            ],
+    return Container(
+      key: Key('bill-card-${bill.title}-${bill.subTitle}'),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFE8E2DA)),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0x14000000),
+            blurRadius: 22,
+            offset: Offset(0, elevation == 0 ? 4 : 10),
           ),
-          child: Row(
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // ── Top row: logo | title+subtitle | pay button ──
+          Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              // Logo
               Container(
-                width: logoSize,
-                height: logoSize,
+                width: 44,
+                height: 44,
                 decoration: BoxDecoration(
                   color: Colors.white,
                   shape: BoxShape.circle,
@@ -87,7 +81,8 @@ class BillCard extends StatelessWidget {
                             _FallbackLogo(title: bill.title, accent: accent),
                       ),
               ),
-              SizedBox(width: compact ? 12 : 16),
+              const SizedBox(width: 12),
+              // Title + subtitle
               Expanded(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -100,9 +95,9 @@ class BillCard extends StatelessWidget {
                           bill.paymentTag!,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: const Color(0xFF9A9388),
-                            fontSize: compact ? 9 : 10,
+                          style: const TextStyle(
+                            color: Color(0xFF9A9388),
+                            fontSize: 10,
                             fontWeight: FontWeight.w700,
                             letterSpacing: 0.6,
                           ),
@@ -112,92 +107,78 @@ class BillCard extends StatelessWidget {
                       bill.title,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        color: const Color(0xFF1F1D1B),
+                      style: const TextStyle(
+                        color: Color(0xFF1F1D1B),
                         fontWeight: FontWeight.w800,
-                        fontSize: compact ? 14 : 16,
+                        fontSize: 16,
                       ),
                     ),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 3),
                     Text(
                       bill.subTitle,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: const Color(0xFF8D867B),
-                        fontSize: compact ? 11 : 12,
+                      style: const TextStyle(
+                        color: Color(0xFF8D867B),
+                        fontSize: 12,
                       ),
                     ),
                   ],
                 ),
               ),
-              SizedBox(width: compact ? 10 : 14),
-              SizedBox(
-                width: ctaWidth,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    FilledButton(
-                      key: const Key('pay-cta'),
-                      onPressed: () {},
-                      style: FilledButton.styleFrom(
-                        backgroundColor: const Color(0xFF111111),
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        minimumSize: Size(ctaWidth, compact ? 42 : 46),
-                        padding: EdgeInsets.symmetric(
-                          horizontal: compact ? 12 : 14,
-                          vertical: compact ? 10 : 12,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                      ),
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text(
-                          bill.paymentTitle,
-                          maxLines: 1,
-                          style: TextStyle(
-                            fontWeight: FontWeight.w700,
-                            fontSize: compact ? 12 : 14,
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: compact ? 8 : 10),
-                    ConstrainedBox(
-                      constraints: BoxConstraints(
-                        maxWidth: ctaWidth,
-                        minHeight: compact ? 18 : 20,
-                      ),
-                      child: Align(
-                        alignment: Alignment.centerRight,
-                        child: flipperConfig != null && flipperConfig.hasContent
-                            ? FlipperWidget(config: flipperConfig)
-                            : Text(
-                                footerText,
-                                key: const Key('footer-text'),
-                                textAlign: TextAlign.right,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  color: _footerColor(footerText),
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: compact ? 10 : 11,
-                                  letterSpacing: 0.4,
-                                ),
-                              ),
-                      ),
-                    ),
-                  ],
+              const SizedBox(width: 12),
+              // Pay button — natural width, no fixed ctaWidth
+              FilledButton(
+                key: const Key('pay-cta'),
+                onPressed: () {},
+                style: FilledButton.styleFrom(
+                  backgroundColor: const Color(0xFF111111),
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  minimumSize: const Size(100, 44),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                child: Text(
+                  bill.paymentTitle,
+                  maxLines: 1,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                  ),
                 ),
               ),
             ],
           ),
-        );
-      },
+
+          // ── Bottom row: full-width flipper / footer text ──
+          if (hasBottom) ...[
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerRight,
+              child: flipperConfig != null && flipperConfig.hasContent
+                  ? FlipperWidget(config: flipperConfig)
+                  : Text(
+                      footerText,
+                      key: const Key('footer-text'),
+                      textAlign: TextAlign.right,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: _footerColor(footerText),
+                        fontWeight: FontWeight.w700,
+                        fontSize: 11,
+                        letterSpacing: 0.4,
+                      ),
+                    ),
+            ),
+          ],
+        ],
+      ),
     );
   }
 }
@@ -210,8 +191,7 @@ class _FallbackLogo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final initial = title.isEmpty ? '?' : title.substring(0, 1);
-
+    final initial = title.isEmpty ? '?' : title[0];
     return DecoratedBox(
       decoration: BoxDecoration(
         gradient: LinearGradient(

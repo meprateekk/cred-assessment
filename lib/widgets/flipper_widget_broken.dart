@@ -41,9 +41,12 @@ class _FlipperWidgetState extends State<FlipperWidget> {
   }
 
   void _startIfNeeded() {
+    print('FLIPPER DEBUG: Starting flipper with ${_items.length} items: $_items');
     if (_items.length <= 1) {
+      print('FLIPPER DEBUG: Not starting - only ${_items.length} items');
       return;
     }
+    print('FLIPPER DEBUG: Starting timer with ${widget.config.delayMs}ms delay');
     _timer = Timer.periodic(
       Duration(milliseconds: widget.config.delayMs),
       (_) => _advance(),
@@ -130,7 +133,7 @@ class _FlipperWidgetState extends State<FlipperWidget> {
         currentText,
         key: ValueKey(currentText),
         textAlign: TextAlign.right,
-        maxLines: 1,
+        maxLines: 2,
         overflow: TextOverflow.ellipsis,
         style: const TextStyle(
           color: Color(0xFFFFCF70),
